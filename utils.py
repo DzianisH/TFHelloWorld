@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
+import time
 
 def get_weight_variable(layer_name):
     with tf.variable_scope(layer_name, reuse=True):
@@ -36,3 +37,35 @@ def plot_images(images, img_shape, cls_true, cls_pred=None):
     plt.show()
 
 
+def train(data, batch_size, executor):
+    time_delay = time.time()
+    epoch_accuracy = 0
+    epoch_loss = 0
+    for step in range(0, data.num_examples, batch_size):
+        x_batch, y_true_batch = data.next_batch(batch_size)
+        _, batch_guesses, batch_loss = executor(x_batch, y_true_batch)
+        epoch_accuracy += batch_guesses
+        epoch_loss += batch_loss
+    epoch_accuracy = epoch_accuracy * 100. / data.num_examples
+
+    time_delay = time.time() - time_delay
+
+    return epoch_accuracy, epoch_loss, time_delay
+
+def test(data, batch_size, executor):
+    time_delay = time.time()
+    epoch_accuracy = 0
+    for step in range(0, data.num_examples, batch_size):
+        x_batch, y_true_batch = data.next_batch(batch_size)
+        epoch_accuracy += executor(x_batch, y_true_batch)[0]
+    epoch_accuracy = epoch_accuracy * 100. / data.num_examples
+
+    time_delay = time.time() - time_delay
+    return epoch_accuracy, time_delay
+
+
+def create_session(gpu_mem_fraction=0.73):
+    config = tf.ConfigProto()
+    config.gpu_options.per_process_gpu_memory_fraction = gpu_mem_fraction
+
+    return tf.Session(config=config)

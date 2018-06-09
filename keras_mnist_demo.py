@@ -21,7 +21,6 @@ config.gpu_options.per_process_gpu_memory_fraction = 0.75
 set_session(tf.Session(config=config))
 
 
-
 batch_size = 128
 num_classes = 10
 epochs = 12
